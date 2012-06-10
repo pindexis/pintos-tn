@@ -4,7 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
-
+#include "threads/synch.h"
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -13,7 +13,7 @@ enum thread_status
     THREAD_BLOCKED,     /* Waiting for an event to trigger. */
     THREAD_DYING        /* About to be destroyed. */
   };
-
+ 
 /* Thread identifier type.
    You can redefine this to whatever type you like. */
 typedef int tid_t;
@@ -89,10 +89,20 @@ struct thread
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
-
+    
+    int64_t wake_up_ticks;
+    struct list_elem sleepelem;
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-
+    
+    /*used for priority scheduler*/
+    struct lock* locker;//the blocking lock if the thread is blocked,used to get the waiting lock for a given thread
+    int priority_backup;/*if the thread change priority while acquiring a lock ,this will change unstead of priority attribute and update the priority when releasing all the locks*/
+    struct list acquired_locks;//acquired locks,used to restore priorities back
+    
+    /*used for mlfqs scheduler */
+    int nice; //nice value  
+    int recent_cpu;//used cpu 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -133,9 +143,17 @@ void thread_foreach (thread_action_func *, void *);
 int thread_get_priority (void);
 void thread_set_priority (int);
 
+/* mlfqs scheduler facilities */
 int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+/* priority sceduler facilities*/
+void thread_set_locker(struct lock*);
+void thread_unset_locker(void);
+void thread_acquire_lock(struct lock *);
+void thread_release_lock(struct lock *);
+
+bool priority_less (const struct list_elem *,const struct list_elem *,void *);
 #endif /* threads/thread.h */
