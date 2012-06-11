@@ -898,6 +898,19 @@ thread_release_lock(struct lock * released_lock)
 	}
 	thread_current()->priority=newpr;
 
+}
+struct thread * thread_get_by_tid(int tid)
+{
+struct list_elem *e;
+  for (e = list_begin (&all_list); e != list_end (&all_list);
+       e = list_next (e))
+  {
+	  struct thread *t = list_entry (e, struct thread, allelem);
+	  if(t->tid==tid)
+		  return t;
+  }
+return NULL;
+
 }                      
 
 /* Offset of `stack' member within `struct thread'. 

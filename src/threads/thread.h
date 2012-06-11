@@ -5,6 +5,8 @@
 #include <list.h>
 #include <stdint.h>
 #include "threads/synch.h"
+#include "userprog/process.h" 
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -106,6 +108,7 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
+    struct user_process * process;
 #endif
 
     /* Owned by thread.c. */
@@ -156,4 +159,5 @@ void thread_acquire_lock(struct lock *);
 void thread_release_lock(struct lock *);
 
 bool priority_less (const struct list_elem *,const struct list_elem *,void *);
+struct thread * thread_get_by_tid(int tid);
 #endif /* threads/thread.h */
